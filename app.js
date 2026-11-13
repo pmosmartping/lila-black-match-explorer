@@ -209,7 +209,7 @@
     const kills = events.filter((e) => e.type === 'Kill' || e.type === 'BotKill').length;
     const deaths = events.filter((e) => ['Killed', 'BotKilled', 'KilledByStorm'].includes(e.type)).length;
     const matchLabel = activeData.length === 1 ? activeData[0].id : `${activeData.length} matches selected`;
-    ui.summary.innerHTML = `<div class="summary-id">${escapeHtml(matchLabel)}</div><div class="summary-stats"><div class="stat"><strong>${allPlayers.length}</strong><span>PLAYERS</span></div><div class="stat"><strong>${kills}</strong><span>KILLS</span></div><div class="stat"><strong>${deaths}</strong><span>DEATHS</span></div></div><div class="summary-meta"><span><strong>${humans}</strong> humans</span><span><strong>${bots}</strong> bots</span><span>longest <strong>${fmtTime(maxDuration)}</strong></span></div><span class="summary-badge">${escapeHtml(formatDate(ui.date.value))}${ui.date.value === '2026-02-14' ? ' · PARTIAL DAY' : ''}</span>`;
+    ui.summary.innerHTML = `<div class="summary-id">${escapeHtml(matchLabel)}</div><div class="summary-stats"><div class="stat"><strong>${allPlayers.length}</strong><span>JOURNEYS</span></div><div class="stat"><strong>${kills}</strong><span>KILL RECORDS</span></div><div class="stat"><strong>${deaths}</strong><span>DEATH RECORDS</span></div></div><div class="summary-meta"><span><strong>${humans}</strong> human journeys</span><span><strong>${bots}</strong> bot journeys</span><span>longest <strong>${fmtTime(maxDuration)}</strong></span></div><span class="summary-badge">${escapeHtml(formatDate(ui.date.value))}${ui.date.value === '2026-02-14' ? ' · PARTIAL DAY' : ''}</span>`;
   }
   function updateEvents(render = true) {
     const events = cachedDiscrete;

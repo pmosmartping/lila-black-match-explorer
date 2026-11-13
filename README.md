@@ -4,6 +4,8 @@ A static browser tool for exploring movement and recorded events in LILA BLACK p
 
 **Live viewer:** <https://pmosmartping.github.io/lila-black-match-explorer/>. The deployed data is public and pseudonymized, not anonymous.
 
+The visual design follows [LILA Games](https://lilagames.com/). The LILA mark and BLACK artwork in `assets/brand/` are sourced from its official site and remain the property of their respective rights holders. The bundled fonts use the SIL Open Font License; their license texts are in `assets/fonts/`.
+
 ## Quick start
 
 Requirements: Python 3.10 or newer and a browser.
