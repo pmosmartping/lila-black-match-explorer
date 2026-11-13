@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1117">
+  <title>Fieldnotes — LILA BLACK match viewer</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Fieldnotes home"><span class="brand-mark" aria-hidden="true">F</span><span>FIELDNOTES <small>GAME INTELLIGENCE</small></span></a>
+    <div class="dataset-status"><span class="status-dot" aria-hidden="true"></span><span id="statusText" role="status" aria-live="polite">Loading match index…</span></div>
+  </header>
+  <main class="shell">
+    <section class="intro" aria-labelledby="pageTitle">
+      <div><p class="eyebrow">LILA BLACK / PLAYER JOURNEYS</p><h1 id="pageTitle">Match field reports</h1><p class="lede">Explore movement, encounters, and loot across recorded matches.</p></div>
+      <div class="data-note"><span aria-hidden="true">◷</span><span>Source window<br><strong>Feb 10–14, 2026</strong> <em>· Feb 14 is partial</em></span></div>
+    </section>
+    <section class="filters panel" aria-label="Match filters">
+      <label class="filter-field">Map<select id="mapSelect" disabled><option>Loading…</option></select></label>
+      <label class="filter-field">Source date<select id="dateSelect" disabled><option>Loading…</option></select></label>
+      <label class="filter-field match-field">Match<select id="matchSelect" disabled><option>Loading…</option></select></label>
+      <button class="button button-quiet" id="resetButton" type="button" disabled>Reset view</button>
+    </section>
+    <div id="notice" class="notice" role="status" hidden></div>
+    <section class="workspace">
+      <section class="map-panel panel" aria-labelledby="mapHeading">
+        <div class="panel-heading map-heading"><div><p class="eyebrow">TACTICAL OVERVIEW</p><h2 id="mapHeading">Match map</h2></div><div class="map-tools"><button class="icon-button" id="zoomOut" type="button" aria-label="Zoom out" title="Zoom out" disabled>−</button><button class="icon-button" id="zoomIn" type="button" aria-label="Zoom in" title="Zoom in" disabled>+</button><button class="icon-button fit-button" id="fitButton" type="button" title="Fit map" disabled>Fit</button></div></div>
+        <div class="map-viewport" id="mapViewport" aria-label="Interactive match map. Use zoom buttons or drag to pan.">
+          <div class="map-empty" id="mapEmpty"><span class="empty-symbol" aria-hidden="true">⌖</span><strong>Choose a match to begin</strong><span>Journey paths and events will appear here.</span></div>
+          <svg id="mapSvg" viewBox="0 0 1024 1024" role="img" aria-label="Player paths and event locations on the minimap" hidden>
+            <image id="mapImage" x="0" y="0" width="1024" height="1024" preserveAspectRatio="none"></image>
+            <g id="heatLayer" aria-label="Event traffic density"></g><g id="pathLayer"></g><g id="eventLayer"></g>
+          </svg>
+          <div class="map-caption"><span id="mapCaption">No map selected</span><span id="outsideCount"></span></div>
+          <div class="map-tooltip" id="mapTooltip" role="status" hidden></div>
+        </div>
+        <div class="map-footer"><div class="legend" aria-label="Map legend"><span><i class="legend-line human"></i>Human path</span><span><i class="legend-line bot"></i>Bot path</span><span><i class="legend-dot kill"></i>Kill · kill record</span><span><i class="legend-dot botkill"></i>BotKill · bot-tagged kill record</span><span><i class="legend-dot killed"></i>Killed · death record</span><span><i class="legend-dot botkilled"></i>BotKilled · bot-tagged death record</span><span><i class="legend-diamond loot"></i>Loot · loot record</span><span><i class="legend-storm"></i>KilledByStorm · storm death</span></div><label class="heat-control">Heatmap<select id="heatMode" aria-label="Heatmap overlay" disabled><option value="off">Off</option><option value="traffic">Traffic · position samples</option><option value="kills">Kill events</option><option value="deaths">Death events · storm included</option></select></label></div>
+        <p class="heat-note" id="heatNote" hidden></p>
+      </section>
+      <aside class="side-panel">
+        <section class="panel summary-panel" aria-labelledby="summaryHeading"><div class="panel-heading"><div><p class="eyebrow">FIELD REPORT</p><h2 id="summaryHeading">At a glance</h2></div></div><div id="summaryContent" class="summary-content"><p class="muted">Select a match to see its overview.</p></div></section>
+        <section class="panel event-panel" aria-labelledby="eventHeading"><div class="panel-heading"><div><p class="eyebrow">RECORDED MOMENTS</p><h2 id="eventHeading">Events</h2></div><span class="event-count" id="eventCount">—</span></div><div class="event-list" id="eventList"><p class="muted">Events will appear here.</p></div></section>
+      </aside>
+    </section>
+    <section class="panel timeline-panel" aria-labelledby="timelineHeading">
+      <div class="timeline-top"><div><p class="eyebrow">MATCH PLAYBACK</p><h2 id="timelineHeading">Timeline</h2><p class="timeline-context" id="timelineContext">Choose a match to scrub through recorded time.</p></div><div class="time-readout"><strong id="currentTime">00:00</strong><span id="durationLabel">/ 00:00</span></div></div>
+      <div class="scrubber-row"><button class="play-button" id="playButton" type="button" aria-label="Play timeline" disabled><span id="playIcon" aria-hidden="true">▶</span></button><div class="scrubber-wrap"><input id="timeline" type="range" min="0" max="0" step="0.1" value="0" aria-label="Playback time" disabled><div class="ticks" id="timelineTicks" aria-hidden="true"></div></div><label class="speed-label">Speed<select id="speedSelect" aria-label="Playback speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label></div>
+      <div class="timeline-foot"><span id="timelineEventCount">No events in view</span><span>Time is relative to each match start</span></div>
+    </section>
+    <footer><span>FIELDNOTES <span class="footer-dot">·</span> Static browser viewer</span><span>Loads dataset files from the configured site paths; no third-party services.</span></footer>
+  </main>
+</body>
+</html>
