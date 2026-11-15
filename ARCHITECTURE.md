@@ -24,5 +24,8 @@ Although `ts` is typed `timestamp[ms]`, its raw integers appear to be Unix **sec
 |---|---|
 | Static files and client-side filtering | Simple hosting; browser bandwidth and memory grow with data. |
 | Lines between sampled positions | Useful route approximation, not continuous telemetry. |
-| Unsmoothed grid counts | Transparent heatmaps; traffic counts samples, not unique players or dwell time. |
+| Smooth density gradient heatmaps | Continuous thermal gradients with Gaussian kernel smoothing; traffic counts samples, not unique players or dwell time. |
+| Multiselect composite heatmaps | Real-time multi-layer canvas composition; allows spatial correlation of traffic corridors vs combat hotspots with zero server overhead. |
+| Level intelligence & pacing breakdown | Automated extraction of level design milestones (first blood, phase distribution, storm mortality) from raw telemetry; abstracts loot event volume while keeping raw log accessible. |
+| Smart Analysis (Local Ollama / Deployed Fallback) | On-demand AI level co-pilot; leverages local Ollama (`llama3.2`) for zero-leakage on-device inference with typewriter streaming, or provides tailored simulated insights when deployed without local server access. |
 | Pseudonymized public export | Convenient sharing; production telemetry and match IDs remain visible and require authorization. |

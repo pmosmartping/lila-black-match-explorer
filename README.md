@@ -38,10 +38,10 @@ The pipeline creates `data/manifest.json`, map/date dataset JSON, and aspect-pre
 Serve the repository root locally (do not open `index.html` as a `file://` URL):
 
 ```sh
-python -m http.server 8000 --bind 127.0.0.1
+python -m http.server 8500 --bind 127.0.0.1
 ```
 
-Open <http://localhost:8000/>. The server must serve JSON and WebP files from the site's relative paths. Stop it with Ctrl-C.
+Open <http://localhost:8500/>. The server must serve JSON and WebP files from the site's relative paths. Stop it with Ctrl-C.
 
 ## Deployment
 

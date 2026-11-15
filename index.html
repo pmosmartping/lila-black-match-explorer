@@ -1,43 +1,57 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0c0c0d">
-  <title>LILA BLACK — Level Design Intelligence</title>
-  <link rel="preload" href="assets/fonts/pixelify-sans-700.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/space-grotesk-400.woff2" as="font" type="font/woff2" crossorigin>
+  <title>LILA BLACK · Match Explorer</title>
+  <meta name="description" content="Black Match Explorer. Interactive movement paths, combat records, and spatial density heatmaps.">
   <link rel="stylesheet" href="styles.css">
-  <script src="app.js" defer></script>
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="./" aria-label="LILA Games BLACK telemetry workspace">
-      <img src="assets/brand/lila-logo.png" alt="LILA Games" class="brand-logo">
+      <img src="assets/brand/lila-logo.png" alt="Lila Games" class="brand-logo">
       <span class="brand-divider" aria-hidden="true"></span>
-      <span class="brand-product">BLACK <small>LEVEL INTELLIGENCE</small></span>
+      <span class="brand-product">BLACK <small>MATCH EXPLORER</small></span>
     </a>
     <nav class="top-nav" aria-label="Workspace">
-      <span class="nav-current"><i aria-hidden="true"></i> Telemetry</span>
-      <span class="nav-context">PLAYER JOURNEYS <b>·</b> LEVEL DESIGN</span>
+      <span class="nav-title"><i class="status-dot ready" aria-hidden="true"></i> Telemetry</span>
+      <span class="nav-current">Player Journeys</span>
+      <span class="nav-context">Level Design Intelligence</span>
     </nav>
     <div class="dataset-status"><span class="status-dot" aria-hidden="true"></span><span id="statusText" role="status" aria-live="polite">Loading match index…</span></div>
   </header>
   <main class="shell">
-    <section class="intro" aria-labelledby="pageTitle">
+    <section class="intro">
       <div class="intro-copy">
-        <p class="eyebrow"><span>BLACK / TELEMETRY</span><span class="eyebrow-rule" aria-hidden="true"></span><span>01 — FIELD STUDY</span></p>
+        <p class="eyebrow"><span class="section-number">01</span> FIELD STUDY</p>
         <h1 id="pageTitle">See the <em>paths</em><br class="mobile-break"> players take.</h1>
         <p class="lede">Trace player movement, encounters and loot across recorded matches.</p>
       </div>
       <div class="intro-art" aria-hidden="true"><img src="assets/brand/black-hero.webp" alt=""><span>FIELD<br>INTELLIGENCE</span></div>
-      <div class="data-note"><span class="data-note-mark" aria-hidden="true">◷</span><span>DATA WINDOW<strong>FEB 10 — 14, 2026</strong><em>Feb 14 is partial</em></span></div>
+      <div class="data-note">
+        <div class="data-note-header">
+          <span class="data-note-mark" aria-hidden="true">◷</span>
+          <span class="data-note-label">DATA WINDOW</span>
+        </div>
+        <div class="data-note-body">
+          <strong>FEB 10 — 14, 2026</strong>
+          <em>Feb 14 is partial</em>
+        </div>
+      </div>
     </section>
     <section class="filters panel" aria-label="Match filters">
-      <div class="filter-intro"><span class="filter-index">01</span><span>SELECT A VIEW</span></div>
+      <div class="filter-intro"><span class="filter-index">01</span><span>FILTERS</span></div>
       <label class="filter-field"><span>Map</span><select id="mapSelect" disabled><option>Loading…</option></select></label>
-      <label class="filter-field"><span>Source date</span><select id="dateSelect" disabled><option>Loading…</option></select></label>
-      <label class="filter-field match-field"><span>Match</span><select id="matchSelect" disabled><option>Loading…</option></select></label>
+      <div class="filter-field-group">
+        <label class="filter-field"><span>Date</span><select id="dateSelect" disabled><option>Loading…</option></select></label>
+        <button class="button button-quiet button-compact" id="customDateBtn" type="button" title="Select multiple dates together" disabled>Multi-day…</button>
+      </div>
+      <div class="filter-field-group match-field">
+        <label class="filter-field match-select-label"><span>Match</span><select id="matchSelect" disabled><option>Loading…</option></select></label>
+        <button class="button button-quiet button-compact" id="customMatchBtn" type="button" title="Select multiple matches to analyze together" disabled>Select matches…</button>
+        <button class="button button-compact button-smart" id="openSmartModalBtn" type="button" title="Open AI Smart Analysis for the current telemetry">✦ Smart Analysis</button>
+      </div>
       <button class="button button-quiet" id="resetButton" type="button" disabled><span aria-hidden="true">↺</span> Reset view</button>
     </section>
     <div id="notice" class="notice" role="status" hidden></div>
@@ -51,7 +65,10 @@
           <div class="map-empty" id="mapEmpty"><span class="empty-symbol" aria-hidden="true">⌖</span><strong>Choose a match to begin</strong><span>Movement traces and event locations appear here.</span></div>
           <svg id="mapSvg" viewBox="0 0 1024 1024" role="img" aria-label="Player paths and event locations on the minimap" hidden>
             <image id="mapImage" x="0" y="0" width="1024" height="1024" preserveAspectRatio="none"></image>
-            <g id="heatLayer" aria-label="Event traffic density"></g><g id="pathLayer"></g><g id="eventLayer"></g>
+            <g id="heatLayer" aria-label="Event traffic density">
+              <image id="heatImage" x="0" y="0" width="1024" height="1024" preserveAspectRatio="none" style="pointer-events: none;"></image>
+            </g>
+            <g id="pathLayer"></g><g id="eventLayer"></g>
           </svg>
           <div class="map-caption"><span id="mapCaption">No map selected</span><span id="outsideCount"></span></div>
           <div class="map-tooltip" id="mapTooltip" role="status" hidden></div>
@@ -62,27 +79,258 @@
           <div class="legend-block"><p class="legend-heading">MAP KEY <span>· ENTITY &amp; EVENT</span></p>
             <div class="legend" aria-label="Map legend">
               <span><i class="legend-line human"></i>Human path</span><span><i class="legend-line bot"></i>Bot path</span>
-              <span><i class="legend-dot kill"></i>Kill · kill record</span><span><i class="legend-dot botkill"></i>BotKill · bot-tagged kill record</span>
-              <span><i class="legend-dot killed"></i>Killed · death record</span><span><i class="legend-dot botkilled"></i>BotKilled · bot-tagged death record</span>
-              <span><i class="legend-diamond loot"></i>Loot · loot record</span><span><i class="legend-storm"></i>KilledByStorm · storm death</span>
+              <span><i class="legend-dot kill"></i>Kill</span><span><i class="legend-dot botkill"></i>BotKill</span>
+              <span><i class="legend-dot killed"></i>Killed</span><span><i class="legend-dot botkilled"></i>BotKilled</span>
+              <span><i class="legend-diamond loot"></i>Loot</span><span><i class="legend-storm"></i>Storm death</span>
             </div>
           </div>
-          <label class="heat-control"><span>HEATMAP MODE</span><select id="heatMode" aria-label="Heatmap overlay" disabled><option value="off">Off</option><option value="traffic">Traffic · position samples</option><option value="kills">Kill events</option><option value="deaths">Death events · storm included</option></select></label>
+          <div class="heat-controls-wrap">
+            <div class="heat-header">
+              <span class="control-label">HEATMAP LAYERS · MULTISELECT</span>
+              <span class="heat-compare-badge" id="heatStatusBadge" hidden></span>
+            </div>
+            <div class="heat-multiselect" role="group" aria-label="Heatmap multi-select layers">
+              <button type="button" class="chip-btn" id="chipTraffic" data-mode="traffic" aria-pressed="false" title="Toggle player traffic density (teal)"><span class="chip-dot traffic"></span> ◈ Traffic</button>
+              <button type="button" class="chip-btn" id="chipKills" data-mode="kills" aria-pressed="false" title="Toggle combat kill density (coral)"><span class="chip-dot kills"></span> ⚔ Kills</button>
+              <button type="button" class="chip-btn" id="chipDeaths" data-mode="deaths" aria-pressed="false" title="Toggle casualty/death density (violet)"><span class="chip-dot deaths"></span> ☠ Deaths</button>
+              <button type="button" class="chip-btn chip-clear" id="chipClearHeat" title="Turn all heatmaps off" disabled>Off</button>
+            </div>
+          </div>
         </div>
         <p class="heat-note" id="heatNote" hidden></p>
         <p class="data-caveat"><span aria-hidden="true">i</span> Event names reflect recorded telemetry labels; a “kill” is a kill record, not an independently verified outcome.</p>
       </section>
       <section class="panel timeline-panel" aria-labelledby="timelineHeading">
         <div class="timeline-top"><div><p class="eyebrow"><span class="section-number">03</span> MATCH PLAYBACK</p><h2 id="timelineHeading">Follow the run<span class="timeline-subtitle">SCRUB · PLAY · INSPECT</span></h2><p class="timeline-context" id="timelineContext">Choose a match to scrub through recorded time.</p></div><div class="time-readout"><strong id="currentTime">00:00</strong><span id="durationLabel">/ 00:00</span></div></div>
-        <div class="scrubber-row"><button class="play-button" id="playButton" type="button" aria-label="Play timeline" disabled><span id="playIcon" aria-hidden="true">▶</span></button><div class="scrubber-wrap"><input id="timeline" type="range" min="0" max="0" step="0.1" value="0" aria-label="Playback time" disabled><div class="ticks" id="timelineTicks" aria-hidden="true"></div></div><label class="speed-label"><span>SPEED</span><select id="speedSelect" aria-label="Playback speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label></div>
+        <div class="scrubber-row"><button class="play-button" id="playButton" type="button" aria-label="Play timeline" disabled><span id="playIcon" aria-hidden="true">▶</span></button><div class="scrubber-wrap"><input id="timeline" type="range" min="0" max="0" step="0.1" value="0" aria-label="Playback time" disabled><div class="ticks" id="timelineTicks" aria-hidden="true"></div></div><label class="speed-label"><span>SPEED</span><select id="speedSelect" aria-label="Playback speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option><option value="16">16×</option><option value="32">32×</option></select></label></div>
         <div class="timeline-foot"><span id="timelineEventCount">No events in view</span><span>Time is relative to each match start</span></div>
       </section>
       <aside class="side-panel">
-        <section class="panel summary-panel" aria-labelledby="summaryHeading"><div class="panel-heading"><div><p class="eyebrow"><span class="section-number">04</span> RUN PROFILE</p><h2 id="summaryHeading">At a glance</h2></div><span class="card-mark" aria-hidden="true">BLK</span></div><div id="summaryContent" class="summary-content"><p class="muted">Select a match to see its overview.</p></div></section>
-        <section class="panel event-panel" aria-labelledby="eventHeading"><div class="panel-heading"><div><p class="eyebrow"><span class="section-number">05</span> SIGNAL LOG</p><h2 id="eventHeading">Recorded events</h2></div><span class="event-count" id="eventCount">—</span></div><div class="event-list" id="eventList"><p class="muted">Events will appear here.</p></div></section>
+        <section class="panel summary-panel" aria-labelledby="summaryHeading"><div class="panel-heading"><div><p class="eyebrow"><span class="section-number">04</span> RUN PROFILE</p><h2 id="summaryHeading">At a glance</h2></div></div><div id="summaryContent" class="summary-content"><p class="muted">Select a match to see its overview.</p></div></section>
+        <section class="panel event-panel" aria-labelledby="intelHeading">
+          <div class="panel-heading intel-heading">
+            <div>
+              <p class="eyebrow"><span class="section-number">05</span> LEVEL INTELLIGENCE</p>
+              <h2 id="intelHeading">Combat &amp; telemetry insights</h2>
+            </div>
+            <div class="intel-tabs" role="tablist" aria-label="Intelligence views">
+              <button type="button" class="intel-tab is-active" id="tabInsights" role="tab" aria-selected="true" aria-controls="viewInsights">Insights</button>
+              <button type="button" class="intel-tab" id="tabSmart" role="tab" aria-selected="false" aria-controls="viewSmart">✦ Smart Analysis</button>
+              <button type="button" class="intel-tab" id="tabCombat" role="tab" aria-selected="false" aria-controls="viewCombat">Combat feed</button>
+              <button type="button" class="intel-tab" id="tabAll" role="tab" aria-selected="false" aria-controls="viewAll">All signals</button>
+            </div>
+          </div>
+
+          <!-- Tab 1: Level Insights Dashboard -->
+          <div class="intel-view" id="viewInsights" role="tabpanel">
+            <div id="insightContainer" class="insight-container">
+              <p class="muted">Select a match to view level pacing and combat insights.</p>
+            </div>
+          </div>
+
+          <!-- Tab 2: Smart Analysis Co-Pilot -->
+          <div class="intel-view" id="viewSmart" role="tabpanel" hidden>
+            <div class="smart-header">
+              <div>
+                <span class="view-bar-title">AI LEVEL DESIGN CO-PILOT</span>
+                <p class="smart-sub">Synthesize telemetry into tactical level layout recommendations</p>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <button type="button" class="button button-small" id="expandSmartModalBtn" title="Open in full modal window">⤢ Full window</button>
+                <div class="ai-status-pill" id="aiStatusPill" title="Checking local Ollama status...">
+                  <span class="status-indicator"></span>
+                  <span id="aiStatusLabel">Checking Ollama…</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="ai-notice-banner" id="aiNoticeBanner" hidden>
+              <span class="ai-notice-icon" aria-hidden="true">i</span>
+              <div class="ai-notice-body">
+                <strong>Ollama connection required for live local inference.</strong>
+                <span>To run live local models on your telemetry, install &amp; start Ollama (<code>http://localhost:11434</code>) with <code>llama3.2</code>. For this deployed/offline session, a tailored telemetry summary will be simulated.</span>
+              </div>
+            </div>
+
+            <div class="smart-controls">
+              <div class="smart-focus-select-wrap">
+                <label for="smartFocusSelect" class="sr-only">Analysis Focus</label>
+                <select id="smartFocusSelect" class="smart-select">
+                  <option value="comprehensive">Comprehensive Level Review</option>
+                  <option value="spawns">Spawn Spacing &amp; First Blood</option>
+                  <option value="rotations">Mid-Phase Rotations &amp; Choke Points</option>
+                  <option value="storm">Storm Circle Pressure &amp; Terrain</option>
+                </select>
+              </div>
+              <button type="button" class="button button-primary smart-analyze-btn" id="runSmartAnalysis">
+                <span class="btn-icon">✦</span> Analyze match data
+              </button>
+            </div>
+
+            <div class="smart-output-panel" id="smartOutputPanel">
+              <div class="smart-empty" id="smartEmptyState">
+                <span class="smart-empty-icon" aria-hidden="true">⌖</span>
+                <strong>No analysis generated yet</strong>
+                <p>Click <b>Analyze match data</b> above to review combat telemetry, spawn distances, and level pacing with the AI co-pilot.</p>
+              </div>
+              <div class="smart-streaming-wrap" id="smartStreamingWrap" hidden>
+                <div class="smart-stream-header">
+                  <span class="smart-stream-title" id="smartStreamTitle">Analyzing telemetry…</span>
+                  <span class="smart-stream-model" id="smartStreamModel">llama3.2</span>
+                </div>
+                <div class="smart-text-display" id="smartTextDisplay" aria-live="polite"></div>
+                <div class="smart-stream-footer" id="smartStreamFooter" hidden>
+                  <button type="button" class="button button-small" id="copySmartAnalysis">⎘ Copy insights</button>
+                  <button type="button" class="button button-small" id="rerunSmartAnalysis">↺ Re-analyze</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 3: Clean Combat Feed -->
+          <div class="intel-view" id="viewCombat" role="tabpanel" hidden>
+            <div class="intel-view-bar">
+              <span class="view-bar-title">Direct Combat &amp; Casualties</span>
+              <span class="view-bar-count" id="combatFeedCount">0 events</span>
+            </div>
+            <div class="event-list combat-feed-list" id="combatFeedList">
+              <p class="muted">No combat events recorded.</p>
+            </div>
+          </div>
+
+          <!-- Tab 4: All Signals (Full Telemetry Log) -->
+          <div class="intel-view" id="viewAll" role="tabpanel" hidden>
+            <div class="intel-view-bar">
+              <div class="feed-filter-wrap">
+                <label for="allSignalsFilter" class="sr-only">Filter event type</label>
+                <select id="allSignalsFilter" class="feed-filter-select">
+                  <option value="all">All signals</option>
+                  <option value="combat">Combat only</option>
+                  <option value="Loot">Loot only</option>
+                  <option value="KilledByStorm">Storm deaths</option>
+                </select>
+              </div>
+              <span class="event-count" id="eventCount">—</span>
+            </div>
+            <div class="event-list" id="eventList">
+              <p class="muted">Events will appear here.</p>
+            </div>
+          </div>
+        </section>
       </aside>
     </section>
+
+    <!-- Multi-Date Selection Modal -->
+    <div id="datePickerModal" class="modal-backdrop" hidden>
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="datePickerTitle">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow"><span class="section-number">01A</span> DATE SELECTION</p>
+            <h3 id="datePickerTitle">Analyze multiple dates together</h3>
+          </div>
+          <button type="button" class="icon-button modal-close" id="closeDatePicker" aria-label="Close date picker">✕</button>
+        </div>
+        <p class="modal-desc">Select any combination of dates to aggregate player journeys, telemetry, and heatmaps across multiple play sessions.</p>
+        <div class="modal-actions-bar">
+          <button type="button" class="button button-small" id="selectAllDates">Select all</button>
+          <button type="button" class="button button-small" id="clearAllDates">Clear</button>
+        </div>
+        <div class="modal-date-list" id="modalDateList"></div>
+        <div class="modal-footer">
+          <span id="modalDateCount">0 dates selected</span>
+          <button type="button" class="button button-primary" id="applyDateSelection">Apply dates</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multi-Match Selection Modal -->
+    <div id="matchPickerModal" class="modal-backdrop" hidden>
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="matchPickerTitle">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow"><span class="section-number">01B</span> MATCH SELECTION</p>
+            <h3 id="matchPickerTitle">Analyze selected matches together</h3>
+          </div>
+          <button type="button" class="icon-button modal-close" id="closeMatchPicker" aria-label="Close match picker">✕</button>
+        </div>
+        <p class="modal-desc">Combine specific matches to compare routes, combat engagements, and survival paths side-by-side.</p>
+        <div class="modal-toolbar">
+          <input type="search" id="matchSearch" placeholder="Filter matches by ID..." class="modal-search" aria-label="Filter matches by ID">
+          <div class="modal-actions-bar">
+            <button type="button" class="button button-small" id="selectAllMatches">Select all</button>
+            <button type="button" class="button button-small" id="clearAllMatches">Clear</button>
+          </div>
+        </div>
+        <div class="modal-match-list" id="modalMatchList"></div>
+        <div class="modal-footer">
+          <span id="modalSelectedCount">0 matches selected</span>
+          <button type="button" class="button button-primary" id="applyMatchSelection">Apply selection</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Smart Analysis Modal Dialog -->
+    <div id="smartAnalysisModal" class="modal-backdrop" hidden>
+      <div class="modal-panel smart-modal-panel" role="dialog" aria-modal="true" aria-labelledby="smartModalTitle">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow"><span class="section-number">05B</span> SMART ANALYSIS · AI CO-PILOT</p>
+            <h3 id="smartModalTitle">Level Intelligence &amp; Combat Pacing Review</h3>
+          </div>
+          <button type="button" class="icon-button modal-close" id="closeSmartModal" aria-label="Close Smart Analysis">✕</button>
+        </div>
+        
+        <div class="smart-modal-toolbar">
+          <div class="smart-focus-select-wrap">
+            <label for="smartModalFocusSelect" class="sr-only">Analysis Focus</label>
+            <select id="smartModalFocusSelect" class="smart-select">
+              <option value="comprehensive">Comprehensive Level Review</option>
+              <option value="spawns">Spawn Spacing &amp; First Blood</option>
+              <option value="rotations">Mid-Phase Rotations &amp; Choke Points</option>
+              <option value="storm">Storm Circle Pressure &amp; Terrain</option>
+            </select>
+          </div>
+          <div class="ai-status-pill" id="aiModalStatusPill" title="Ollama Status">
+            <span class="status-indicator"></span>
+            <span id="aiModalStatusLabel">Checking Ollama…</span>
+          </div>
+          <button type="button" class="button button-primary smart-analyze-btn" id="runSmartModalAnalysis">
+            <span class="btn-icon">✦</span> Analyze match data
+          </button>
+        </div>
+
+        <div class="ai-notice-banner" id="aiModalNoticeBanner" hidden>
+          <span class="ai-notice-icon" aria-hidden="true">i</span>
+          <div class="ai-notice-body">
+            <strong>Ollama connection required for live local inference.</strong>
+            <span>To run live local models on your telemetry, install &amp; start Ollama (<code>http://localhost:11434</code>) with <code>llama3.2</code>. For this deployed/offline session, a tailored telemetry summary will be simulated.</span>
+          </div>
+        </div>
+
+        <div class="smart-output-panel smart-modal-output" id="smartModalOutputPanel">
+          <div class="smart-streaming-wrap" id="smartModalStreamingWrap">
+            <div class="smart-stream-header">
+              <span class="smart-stream-title" id="smartModalStreamTitle">Analyzing telemetry…</span>
+              <span class="smart-stream-model" id="smartModalStreamModel">llama3.2</span>
+            </div>
+            <div class="smart-text-display" id="smartModalTextDisplay" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="modal-footer smart-modal-footer">
+          <div class="smart-modal-footer-info">
+            <span id="smartModalScopeInfo">Telemetry Scope</span>
+          </div>
+          <div class="smart-modal-footer-actions">
+            <button type="button" class="button button-small" id="copySmartModalAnalysis">⎘ Copy insights</button>
+            <button type="button" class="button button-small" id="rerunSmartModalAnalysis">↺ Re-analyze</button>
+            <button type="button" class="button button-small" id="closeSmartModalBtn">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <footer><span><img src="assets/brand/lila-logo.png" alt="" aria-hidden="true"> LILA GAMES <b>·</b> BLACK TELEMETRY</span><span>Static browser viewer <i>·</i> Data loaded from configured site paths; no third-party services.</span></footer>
   </main>
+  <script src="app.js"></script>
 </body>
 </html>
